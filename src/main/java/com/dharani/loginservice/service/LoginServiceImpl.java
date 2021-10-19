@@ -1,38 +1,38 @@
 package com.dharani.loginservice.service;
 
-
 import com.dharani.loginservice.model.LoginModel;
 import com.dharani.loginservice.model.User;
 import com.dharani.loginservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.env.Environment;
 
-import java.util.Arrays;
-import java.util.List;
 
 @Service
 public class LoginServiceImpl implements LoginService{
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
-    UserRepository userRepository;
-    RestTemplate restTemplate = new RestTemplate();
+    private UserRepository userRepository;
+    @Autowired
+    private final Environment environment;
+
+    public LoginServiceImpl(UserRepository userRepository, Environment environment) {
+        this.userRepository = userRepository;
+        this.environment = environment;
+    }
 
     @Override
-    public List<User> checkUser(LoginModel loginModel) {
-        User userByEmail = userRepository.findUserByEmail(loginModel.getEmail());
-        if (userByEmail!=null) {
-            String url = "http://localhost:8086/user/login";
-            ResponseEntity<User[]> entity = restTemplate.getForEntity(url, User[].class);
-            List<User> list = Arrays.asList(entity.getBody());
+    public User checkUser(final LoginModel loginModel) {
 
-            return list;
+        User userByEmail = userRepository.findUserByEmail(loginModel.getEmail());
+        if (userByEmail!=null && loginModel.getPassword().equals(userByEmail.getPassword()) && loginModel.getEmail().equals(userByEmail.getEmail())) {
+            String url = "http://localhost:8086/user/login/{email}";
+            User forObject = restTemplate.getForObject(url, User.class, loginModel.getEmail());
+            return forObject;
         }
         return null;
     }
 }
+

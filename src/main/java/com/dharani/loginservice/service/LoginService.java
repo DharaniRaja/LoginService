@@ -7,5 +7,5 @@ import com.dharani.loginservice.model.User;
 import java.util.List;
 
 public interface LoginService {
-    List<User> checkUser(LoginModel loginModel);
+    User checkUser(LoginModel loginModel);
 }
